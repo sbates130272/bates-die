@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include <sys/time.h>
+
 struct stats {
 	struct timeval starttime;
 	unsigned long seed;
