@@ -4,18 +4,31 @@
 
 #include <sys/time.h>
 
-struct stats {
+#include "argconfig.h"
+
+const char program_desc[] = "Simple program for testing ZONE_DEVICE devices.";
+
+struct bates_die_t {
 	struct timeval starttime;
 	unsigned long seed;
-	unsigned long *wins;
-	unsigned long games;
+	unsigned ngames;
+	unsigned nsides;
+	unsigned nwins;
 };
+
+static const struct bates_die_t defaults = {
+	.seed       = 0,
+	.ngames     = 100,
+	.nsides     = 6,
+	.nwins      = 5,
+};
+
 	
 int main(int argc, char **argv)
 {
-	struct stats mystats;
+	struct bates_die_t bates_die;
 
-	mystats.seed = 0;
+	bates_die.seed = 0;
 	
 	return 0;
 }

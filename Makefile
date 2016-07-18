@@ -2,11 +2,11 @@ EXE=bates-die
 CFLAGS += -std=gnu99 -Werror
 
 ARGCONFIG=libargconfig
-ARGCONFIG_INC=$(ARGCONFIG)/inc
+ARGCONFIG_INC=$(ARGCONFIG)/inc/argconfig
 LIBARGCONFIG=$(ARGCONFIG)/libargconfig.a
 
 CPPFLAGS += -std=gnu99 -Werror -I$(ARGCONFIG_INC) -D_GNU_SOURCE
-CFLAGS += -g -std=c99
+CFLAGS += -g -std=c99 -I$(ARGCONFIG_INC)
 LDLIBS += -lpthread
 
 $(EXE): $(EXE).c $(LIBARGCONFIG)
