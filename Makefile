@@ -9,8 +9,7 @@ CPPFLAGS += -std=gnu99 -Werror -I$(ARGCONFIG_INC) -D_GNU_SOURCE
 CFLAGS += -g -std=c99 -I$(ARGCONFIG_INC)
 LDLIBS += -lpthread
 
-$(EXE): $(EXE).c $(LIBARGCONFIG)
-	$(CC) $(CFLAGS) $(EXE).c -o $(EXE)
+$(EXE): $(LIBARGCONFIG)
 
 $(LIBARGCONFIG):
 	make -C $(ARGCONFIG) libargconfig.a
