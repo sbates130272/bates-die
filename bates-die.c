@@ -10,12 +10,14 @@
 const char program_desc[] = "Simulation of a simple dice game..";
 
 struct bates_die_t {
-	struct timeval starttime;
+
 	unsigned long seed;
 	unsigned ngames;
 	unsigned nsides;
 	unsigned nwin;
 
+	struct timeval starttime;
+	struct timeval reporttime;
 	unsigned *wins;
 	unsigned games;
 	unsigned npdf;
@@ -31,11 +33,11 @@ static const struct bates_die_t defaults = {
 static const struct argconfig_commandline_options command_line_options[] = {
 	{"seed", "NUM", CFG_LONG, &defaults.seed, required_argument,
 			"seed for random number generator"},
-	{"n", "NUM", CFG_LONG_SUFFIX, &defaults.ngames, required_argument,
+	{"n", "NUM", CFG_POSITIVE, &defaults.ngames, required_argument,
 			"number of games to play"},
-	{"s", "NUM", CFG_LONG, &defaults.nsides, required_argument,
+	{"s", "NUM", CFG_POSITIVE, &defaults.nsides, required_argument,
 			"number of sides on the die"},
-	{"w", "NUM", CFG_LONG_SUFFIX, &defaults.nwin, required_argument,
+	{"w", "NUM", CFG_POSITIVE, &defaults.nwin, required_argument,
 			"number of rools of winning sides needsed to win the game"},
 	{0}
 };
@@ -43,8 +45,7 @@ static const struct argconfig_commandline_options command_line_options[] = {
 static void setup(struct bates_die_t *bates_die)
 {
 	bates_die->games = 0;
-	bates_die->npdf  = (bates_die->nwin-1)*bates_die->nsides-
-		bates_die->nwin;
+	bates_die->npdf  = (bates_die->nwin-1)*bates_die->nsides+2;
 	bates_die->wins  = calloc(bates_die->npdf, sizeof(*bates_die->wins));
 	gettimeofday(&bates_die->starttime, NULL);
 }
@@ -58,14 +59,26 @@ static void report(struct bates_die_t *bates_die)
 {
 	fprintf(stdout,"Bates Die Game Results\n");
 	fprintf(stdout,"----------------------\n\n");
-	fprintf(stdout,"nsides = %3d : nwin = %4d : ngames = %6d\n",
-		bates_die->nsides, bates_die->nwin, bates_die->ngames);
+	fprintf(stdout,"seed = %ld : nsides = %d : nwin = %d : ngames = %d\n",
+		bates_die->seed, bates_die->nsides, bates_die->nwin, bates_die->ngames);
 	fprintf(stdout,"Results after %4d games (%d sec)\n",
 		bates_die->games, 0);
 	for (unsigned i=0; i<bates_die->npdf; i++)
 		fprintf(stdout,"pdf[%04d] = %4d\n", i, bates_die->wins[i]);
 }
 
+static unsigned elapsed(struct bates_die_t *bates_die)
+{
+	struct timeval current;
+	size_t elapsed;
+	gettimeofday(&current, NULL);
+	elapsed = current.tv_sec - bates_die->reporttime.tv_sec;
+	if (elapsed){
+		bates_die->reporttime = current;
+		return elapsed;
+	}
+	return 0;
+}
 static void play(struct bates_die_t *bates_die)
 {
 	unsigned roll, rolls = 0, *score;
@@ -74,7 +87,7 @@ static void play(struct bates_die_t *bates_die)
 	while(1)
 	{
 		roll = rand() % (bates_die->nsides);
-		printf("%d\n", roll);
+		//printf("%d\n", roll);
 		score[roll]++;
 		rolls++;
 		if (score[roll]==bates_die->nwin){
@@ -100,7 +113,14 @@ int main(int argc, char **argv)
 	srand(bates_die.seed);
 
 	setup(&bates_die);
-	play(&bates_die);
+	while(1)
+	{
+		if (bates_die.games >= bates_die.ngames)
+			break;
+		play(&bates_die);
+		if (elapsed(&bates_die))
+			report(&bates_die);
+	}
 	report(&bates_die);
 	teardown(&bates_die);
 	
